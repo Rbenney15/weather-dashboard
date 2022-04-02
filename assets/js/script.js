@@ -39,16 +39,36 @@ var getCityWeather = function(city) {
     });
 };
 
-
+var displayWeather = function(){
+    //clear old content
+    //create date element
+    //create an image element
+    //create span element to hold temps
+    //create span element to hold humidity
+    //create span element to hold wind
+    //append each new element to container temp
+    //append each new element to container humid
+    //append each new element to container wind
+}
 
 
 //using saved city name, get 5 day forecasr get request from weather api
+var get5Day = function() {
 
-//parse response to display forecast for next 5 days current conditions
+}
+var display5Day = function() {
+
+}
+
+var pastSearch = function(){
+ //create element to display past search cities
+}
 
 
+var pastSearchHandler = function(){
+    //city weather
+    //5day forecast
+}
 
 
-//save users search requests and display them underneath search form
-
-//on page load automatically grab and pull last city search and display 5 day forecast
+//button listeners
