@@ -53,11 +53,20 @@ var displayWeather = function(){
 
 
 //using saved city name, get 5 day forecasr get request from weather api
-var get5Day = function() {
+var get5Day = function(city) {
+    var apiKey = 'f6698c6bc3e491ae5c183fe57e2a6522';
+    var apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${apiKey}`
 
-}
-var display5Day = function() {
-
+    fetch(apiUrl)
+    .then(function(response){
+        response.json().then(function(data){
+           display5Day(data);
+        });
+    });
+};
+var display5Day = function(weather) {
+    forecastContainerEl.textContent = ""
+    forecastTitle.textContent = "5-Day Forecast:";
 }
 
 var pastSearch = function(){
