@@ -87,7 +87,7 @@ var displayWeather = function(weather, searchCity){
 //using saved city name, get 5 day forecasr get request from weather api
 var get5Day = function(city) {
     var apiKey = 'f6698c6bc3e491ae5c183fe57e2a6522';
-    var apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${apiKey}`
+    var apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=imperial&appid=${apiKey}`
 
     fetch(apiUrl)
     .then(function(response){
@@ -103,7 +103,7 @@ var display5Day = function(weather){
 
     var forecast = weather.list;
     console.log(length)
-        for(var i = 5; i < forecast.length; i = i + 8){
+        for(var i = 5; i < forecast.length; i = i + 5){
        var dailyForecast = forecast[i];
        
        var forecastEl=document.createElement("div");
