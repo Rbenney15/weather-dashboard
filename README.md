@@ -12,4 +12,4 @@ Weather Dashboard
 
 ## Project links
 * https://rbenney15.github.io/weather-dashboard/
-* 
+* https://github.com/Rbenney15/weather-dashboard.git
