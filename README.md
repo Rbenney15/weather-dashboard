@@ -11,4 +11,5 @@ Weather Dashboard
 * Built with HTML, CSS, JavaScript, Open Weather API, Bootstap, and Moment.js
 
 ## Project links
+* https://rbenney15.github.io/weather-dashboard/
 * 
