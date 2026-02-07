@@ -24,12 +24,25 @@ const el = {
 const state = {
   units: "imperial", // "metric"
   cities: [],
+  lastCity: "", // keep track of what's displayed
 };
 
 function setStatus(msg) {
   el.status.textContent = msg || "";
 }
 
+function unitLabel() {
+  return state.units === "metric" ? "°C" : "°F";
+}
+
+function speedLabel() {
+  return state.units === "metric" ? "m/s" : "mph";
+}
+
+/**
+ * Date formatting helpers
+ * Note: These format using the user's locale/timezone. Forecast selection is city-timezone aware.
+ */
 function formatDateFromUnix(unixSeconds) {
   const d = new Date(unixSeconds * 1000);
   return new Intl.DateTimeFormat(undefined, {
@@ -48,14 +61,18 @@ function formatDayShort(unixSeconds) {
   }).format(d);
 }
 
-function unitLabel() {
-  return state.units === "metric" ? "°C" : "°F";
+function clearWeatherDisplay() {
+  state.lastCity = "";
+  el.searchedCity.textContent = "Search a city to begin";
+  el.currentMeta.innerHTML = "";
+  el.currentContainer.innerHTML = "";
+  el.forecastContainer.innerHTML = "";
+  el.forecastTitle.textContent = "5-Day Forecast";
 }
 
-function speedLabel() {
-  return state.units === "metric" ? "m/s" : "mph";
-}
-
+/**
+ * Storage
+ */
 function loadHistory() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -81,13 +98,14 @@ function addToHistory(city) {
   );
 
   state.cities.unshift(normalized);
-  state.cities = state.cities.slice(0, 10); // keep top 10
+  state.cities = state.cities.slice(0, 10);
   saveHistory();
   renderHistory();
 }
 
 function renderHistory() {
   el.history.innerHTML = "";
+
   if (state.cities.length === 0) {
     const empty = document.createElement("div");
     empty.className = "status";
@@ -106,10 +124,12 @@ function renderHistory() {
   });
 }
 
+/**
+ * Fetch utilities
+ */
 async function fetchJSON(url) {
   const res = await fetch(url);
   if (!res.ok) {
-    // Try to read message from API
     let msg = `Request failed (${res.status})`;
     try {
       const data = await res.json();
@@ -136,14 +156,18 @@ async function getForecast(city) {
   return fetchJSON(url.toString());
 }
 
+/**
+ * Render current
+ */
 function renderCurrent(data) {
   el.currentContainer.innerHTML = "";
   el.currentMeta.innerHTML = "";
 
   const cityName = `${data.name}, ${data.sys?.country || ""}`.trim();
+  state.lastCity = data.name || cityName || "";
+
   el.searchedCity.textContent = cityName;
 
-  // date + icon
   const dateSpan = document.createElement("span");
   dateSpan.textContent = formatDateFromUnix(data.dt);
 
@@ -185,51 +209,69 @@ function renderCurrent(data) {
 }
 
 /**
- * Build a true “daily” 5-day forecast from 3-hour list:
- * - pick the forecast closest to 12:00 local time each day
+ * Forecast selection (timezone-aware) — returns next 5 days excluding today.
  */
-function pickFiveDays(list) {
-  // Group by day (YYYY-MM-DD in the city's local time offset)
-  const byDay = new Map();
+function pickFiveDays(list, timezoneOffsetSeconds = 0) {
+  const toCityLocalDateKey = (dtSeconds) => {
+    const cityLocalMs = (dtSeconds + timezoneOffsetSeconds) * 1000;
+    const d = new Date(cityLocalMs);
+    const yyyy = d.getUTCFullYear();
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
+  const toCityLocalHour = (dtSeconds) => {
+    const cityLocalMs = (dtSeconds + timezoneOffsetSeconds) * 1000;
+    return new Date(cityLocalMs).getUTCHours();
+  };
+
+  const todayKey = toCityLocalDateKey(Math.floor(Date.now() / 1000));
+
+  const byDay = new Map();
   list.forEach((item) => {
-    const d = new Date(item.dt * 1000);
-    const key = d.toISOString().slice(0, 10);
+    const key = toCityLocalDateKey(item.dt);
     if (!byDay.has(key)) byDay.set(key, []);
     byDay.get(key).push(item);
   });
 
-  // For each day, choose the entry closest to 12:00
-  const days = Array.from(byDay.keys()).slice(0, 6); // includes today; we'll drop today below
-  const chosen = [];
+  const upcomingKeys = Array.from(byDay.keys())
+    .filter((k) => k > todayKey)
+    .sort()
+    .slice(0, 5);
 
-  days.forEach((dayKey) => {
-    const entries = byDay.get(dayKey) || [];
-    let best = entries[0];
-    let bestDiff = Infinity;
+  return upcomingKeys
+    .map((key) => {
+      const entries = byDay.get(key) || [];
+      if (entries.length === 0) return null;
 
-    entries.forEach((e) => {
-      const hour = new Date(e.dt * 1000).getHours();
-      const diff = Math.abs(hour - 12);
-      if (diff < bestDiff) {
-        best = e;
-        bestDiff = diff;
-      }
-    });
+      let best = entries[0];
+      let bestDiff = Infinity;
 
-    if (best) chosen.push(best);
-  });
+      entries.forEach((e) => {
+        const hour = toCityLocalHour(e.dt);
+        const diff = Math.abs(hour - 12);
+        if (diff < bestDiff) {
+          best = e;
+          bestDiff = diff;
+        }
+      });
 
-  // Drop "today" if present so we show upcoming 5 days
-  // If you want to include today, remove this slice.
-  return chosen.slice(1, 6);
+      return best;
+    })
+    .filter(Boolean);
 }
 
+/**
+ * Render forecast
+ */
 function renderForecast(data) {
   el.forecastTitle.textContent = "5-Day Forecast";
   el.forecastContainer.innerHTML = "";
 
-  const picked = pickFiveDays(data.list || []);
+  const tz = data.city?.timezone ?? 0;
+  const picked = pickFiveDays(data.list || [], tz);
+
   if (picked.length === 0) {
     el.forecastContainer.textContent = "No forecast data available.";
     return;
@@ -269,17 +311,23 @@ function renderForecast(data) {
   });
 }
 
+/**
+ * Search flow
+ */
 async function searchCity(city) {
+  const q = city.trim();
+  if (!q) return;
+
   setStatus("Loading weather…");
   try {
     const [current, forecast] = await Promise.all([
-      getCurrentWeather(city),
-      getForecast(city),
+      getCurrentWeather(q),
+      getForecast(q),
     ]);
 
     renderCurrent(current);
     renderForecast(forecast);
-    addToHistory(city);
+    addToHistory(q);
     setStatus("");
   } catch (err) {
     setStatus(`Error: ${err.message}`);
@@ -287,7 +335,7 @@ async function searchCity(city) {
 }
 
 /**
- * Geo search: translate coords -> city via OpenWeather reverse geocoding
+ * Reverse geocode for "Use my location"
  */
 async function reverseGeocode(lat, lon) {
   const url = new URL("https://api.openweathermap.org/geo/1.0/reverse");
@@ -295,6 +343,7 @@ async function reverseGeocode(lat, lon) {
   url.searchParams.set("lon", lon);
   url.searchParams.set("limit", "1");
   url.searchParams.set("appid", API_KEY);
+
   const data = await fetchJSON(url.toString());
   const city = data?.[0]?.name;
   if (!city) throw new Error("Could not determine city from location.");
@@ -319,9 +368,7 @@ async function useMyLocation() {
         setStatus(`Error: ${err.message}`);
       }
     },
-    () => {
-      setStatus("Location permission denied.");
-    },
+    () => setStatus("Location permission denied."),
     { enableHighAccuracy: false, timeout: 8000 }
   );
 }
@@ -333,17 +380,13 @@ function setUnits(units) {
   if (units !== "imperial" && units !== "metric") return;
   state.units = units;
 
-  // update UI chips
   document.querySelectorAll(".chip").forEach((chip) => {
     chip.classList.toggle("chip-active", chip.dataset.units === units);
   });
 
-  // If a city is displayed, refresh it
-  const currentCityText = el.searchedCity.textContent?.trim();
-  if (currentCityText && currentCityText !== "Search a city to begin") {
-    // remove country suffix if present (simple approach)
-    const cityName = currentCityText.split(",")[0];
-    searchCity(cityName);
+  // refresh currently displayed city if there is one
+  if (state.lastCity) {
+    searchCity(state.lastCity);
   }
 }
 
@@ -368,9 +411,14 @@ el.history.addEventListener("click", (e) => {
 });
 
 el.clearHistoryBtn.addEventListener("click", () => {
+  // Clear stored history
   state.cities = [];
   saveHistory();
   renderHistory();
+
+  // Clear UI results as well
+  clearWeatherDisplay();
+
   setStatus("Search history cleared.");
   setTimeout(() => setStatus(""), 1200);
 });
@@ -383,3 +431,4 @@ document.querySelectorAll(".chip").forEach((chip) => {
 
 // Init
 loadHistory();
+clearWeatherDisplay();
