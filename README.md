@@ -1,15 +1,13 @@
 # Weather Dashboard
 
-🔗 **Live Application:**  
+**Live Application:**  
 https://rbenney15.github.io/weather-dashboard/
 
 ---
 
 ## Preview
 
-👉 *(Insert updated homepage screenshot below)*
-
-![Weather Dashboard Screenshot](./assets/images/screenshot-placeholder.png)
+![Weather Dashboard Screenshot](./assets/images/weather-dashboard.png)
 
 ---
 
