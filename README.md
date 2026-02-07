@@ -1,15 +1,60 @@
-# weather-dashboard
-Weather Dashboard
+# Weather Dashboard
 
-![image](https://user-images.githubusercontent.com/98703735/161459344-ddb694bf-f523-4187-8990-63d378d40d66.png)
+🔗 **Live Application:**  
+https://rbenney15.github.io/weather-dashboard/
 
+---
 
-## Description
-* Searchable 5 day forecast weather dashboard
-* City searches are saved to localStorage to be quickly accessed later
-* Temperature, Wind speed, and Humidity are displayed
-* Built with HTML, CSS, JavaScript, Open Weather API, Bootstap, and Moment.js
+## Preview
 
-## Project links
-* https://rbenney15.github.io/weather-dashboard/
-* https://github.com/Rbenney15/weather-dashboard.git
+👉 *(Insert updated homepage screenshot below)*
+
+![Weather Dashboard Screenshot](./assets/images/screenshot-placeholder.png)
+
+---
+
+## Overview
+
+Weather Dashboard is a responsive, accessible web application that provides current weather conditions and a 5-day forecast for any searched city. The project was refreshed to remove framework dependencies and improve both code quality and user experience.
+
+Search history is saved locally so previously searched cities can be revisited quickly.
+
+---
+
+## Key Features
+
+✅ Current weather (temperature, humidity, wind)  
+✅ 5-day forecast with daily cards  
+✅ Recent searches with deduping + local persistence  
+✅ Unit toggle (°F / °C)  
+✅ “Use my location” search (geolocation + reverse lookup)  
+✅ Clean, responsive UI without Bootstrap  
+✅ Accessible UI with focus states and semantic structure  
+
+---
+
+## Technical Highlights
+
+- Vanilla JavaScript (ES6+) with reusable rendering functions
+- Native date formatting (no Moment.js)
+- Fetch-based API utilities with error handling
+- LocalStorage persistence for search history
+- Modern CSS with variables and responsive grid layout
+
+---
+
+## Built With
+
+- **HTML5**
+- **CSS3**
+- **Vanilla JavaScript**
+- **OpenWeather API**
+
+---
+
+## Project Links
+
+- Live: https://rbenney15.github.io/weather-dashboard/
+- Repo: https://github.com/Rbenney15/weather-dashboard
+
+---
