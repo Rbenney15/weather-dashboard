@@ -1,43 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="./assets/css/style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Weather Dashboard</title>
-</head>
-<body>
-    <header class = "bg-dark text-white text-center p-2">
-        <h1>Weather Dashboard</h1>
+    <link rel="stylesheet" href="./assets/css/style.css" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="header">
+      <div class="header-inner">
+        <h1 class="header-title">Weather Dashboard</h1>
+        <p class="header-subtitle">Search a city to view current conditions and a 5-day forecast.</p>
+      </div>
     </header>
-    <main class="container-fluid">
-        <div class = "row">
-            <div class="col-12 col-md-3 p-2 search-column">
-                <form class = "border p-2" id = "city-search-form">
-                    <h4>Search for a City</h2>
-                    <input id="city" type = "text" autofocus = "true" class = "form-input"/>
-                    <button class = "btn btn-primary" type = "submit">Search</button>
-                </form>
-                <div class = "past-search border" id = "past-search-buttons"></div>
+
+    <main id="main" class="layout" aria-label="Weather dashboard">
+      <!-- Sidebar -->
+      <aside class="sidebar" aria-label="Search and recent cities">
+        <form id="city-search-form" class="card card--padded" autocomplete="off">
+          <h2 class="card-title">Search</h2>
+
+          <label class="label" for="city">City name</label>
+          <div class="field-row">
+            <input
+              id="city"
+              name="city"
+              type="text"
+              class="input"
+              placeholder="e.g., Washington, DC"
+              required
+            />
+            <button class="btn btn-primary" type="submit">Search</button>
+          </div>
+
+          <div class="row row--between">
+            <button id="useLocationBtn" class="btn btn-ghost" type="button">
+              Use my location
+            </button>
+
+            <div class="units" role="group" aria-label="Units">
+              <button class="chip chip-active" type="button" data-units="imperial">
+                °F
+              </button>
+              <button class="chip" type="button" data-units="metric">°C</button>
             </div>
-            <div class="col-12 col-md-9">
-                <div class = "row border selected-city" id = "current-forecast">
-                    <div class = "col-12">
-                        <h2 id="searched-city"></h2>
-                        <div id = "current-weather-container" class = "list-group"></div>
-                    </div>  
-                </div>
-                <div class = "row border" id = "five-day-forecast">
-                        <h2 class= "col-12" id = "forecast"></h2>
-                        <div class = "d-flex" id = "fiveday-container"></div>
-                </div>  
-            </div>
-        </div>
+          </div>
+
+          <p id="status" class="status" aria-live="polite"></p>
+        </form>
+
+        <section class="card card--padded" aria-label="Recent searches">
+          <div class="row row--between">
+            <h2 class="card-title">Recent</h2>
+            <button id="clearHistoryBtn" class="btn btn-danger btn-small" type="button">
+              Clear
+            </button>
+          </div>
+
+          <div id="past-search-buttons" class="history" role="list"></div>
+        </section>
+      </aside>
+
+      <!-- Content -->
+      <section class="content" aria-label="Weather results">
+        <!-- Current -->
+        <section id="current-forecast" class="card card--padded">
+          <div class="current-head">
+            <h2 id="searched-city" class="current-title">Search a city to begin</h2>
+            <div class="current-meta" id="current-meta" aria-live="polite"></div>
+          </div>
+
+          <div id="current-weather-container" class="current-grid" aria-live="polite"></div>
+        </section>
+
+        <!-- Forecast -->
+        <section id="five-day-forecast" class="card card--padded">
+          <div class="row row--between">
+            <h2 id="forecast" class="card-title">5-Day Forecast</h2>
+          </div>
+
+          <div id="fiveday-container" class="forecast-grid" aria-label="Five day forecast"></div>
+        </section>
+      </section>
     </main>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+
+    <footer class="footer">
+      <span>Powered by OpenWeather • Vanilla JS • Accessible & responsive UI</span>
+    </footer>
+
     <script src="./assets/js/script.js"></script>
-</body>
+  </body>
 </html>
